@@ -12,6 +12,16 @@ require_once(DOKU_INC.'inc/init.php');
 require_once(DOKU_INC.'inc/common.php');
 require_once(DOKU_INC.'inc/events.php');
 require_once(DOKU_INC.'inc/parserutils.php');
+
+//FIXME putting this here disables anonymous browsing :-/
+if ($conf['useacl'] && !isset($_SERVER['PHP_AUTH_USER'])) {
+   header('WWW-Authenticate: Basic realm="DokuWiki WebDAV"');
+   header('HTTP/1.0 401 Unauthorized');
+   echo 'Please log in.';
+   exit;
+}
+dbglog($_SERVER['REMOTE_USER']);
+
 require_once(DOKU_INC.'inc/auth.php');
 require_once(DOKU_INC.'inc/pageutils.php');
 require_once(DOKU_INC.'inc/search.php');
@@ -24,7 +34,6 @@ require_once(WEBDAV_DIR.'/Sabre/include.php');
 require_once(WEBDAV_DIR.'/types/media.php'); //FIXME dynamically load these
 
 // classes below
-
 
 /**
  * Represents one directory and provides methods to access its contents

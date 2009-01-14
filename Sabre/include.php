@@ -4,6 +4,8 @@
  *
  * This file replaces the default Sabre.includes.php using a
  * SABRE_DAV define
+ *
+ * FIXME do we really use them all?
  */
 
 if(!defined('SABRE_DAV')) define('SABRE_DAV',dirname(__FILE__));
