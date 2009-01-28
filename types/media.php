@@ -2,6 +2,9 @@
 /**
  * Implements WebDAV access to the media directory
  *
+ * @todo The functions in inc/media.php should be refactored to be reusable here
+ *       and the XMLRPC interface to avoid all that duplicate code
+ *
  * @author Andreas Gohr <gohr@cosmocode.de>
  */
 
@@ -116,6 +119,16 @@ class media_DAV_File extends Sabre_DAV_File {
             throw new Sabre_DAV_PermissionDeniedException('You are not allowed to access this file');
         }
         return io_readFile($this->path,false); //FIXME inefficient for large data
+    }
+
+    //FIXME is missing a few checks media_delete would do
+    public function delete() {
+        if(auth_quickaclcheck(getNS($this->id).':*') < AUTH_DELETE){
+            throw new Sabre_DAV_PermissionDeniedException('Insufficient Permissions');
+        }
+        if(!unlink($this->path)){
+            throw new Sabre_DAV_PermissionDeniedException('Insufficient Permissions');
+        }
     }
 
     public function put($data) {
