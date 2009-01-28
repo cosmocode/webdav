@@ -13,16 +13,16 @@ require_once(DOKU_INC.'inc/common.php');
 require_once(DOKU_INC.'inc/events.php');
 require_once(DOKU_INC.'inc/parserutils.php');
 
+require_once(DOKU_INC.'inc/auth.php');
 //FIXME putting this here disables anonymous browsing :-/
-if ($conf['useacl'] && !isset($_SERVER['PHP_AUTH_USER'])) {
+if ($conf['useacl'] && !isset($_SERVER['REMOTE_USER'])) {
    header('WWW-Authenticate: Basic realm="DokuWiki WebDAV"');
    header('HTTP/1.0 401 Unauthorized');
    echo 'Please log in.';
    exit;
 }
-dbglog($_SERVER['REMOTE_USER']);
+dbglog('login: '.$_SERVER['REMOTE_USER']);
 
-require_once(DOKU_INC.'inc/auth.php');
 require_once(DOKU_INC.'inc/pageutils.php');
 require_once(DOKU_INC.'inc/search.php');
 
@@ -109,12 +109,11 @@ EOT;
      */
     public function getChildren() {
         global $conf;
-
         $children = array();
 
         if($this->virtual == ''){                    // handle virtual top namespace
             $children[] = new media_DAV_Directory('');
-            $children[] = new DokuWiki_DAV_Directory('txt'); //FIXME
+//            $children[] = new DokuWiki_DAV_Directory('txt'); //FIXME
             //FIXME list all available converters here
             return $children;
 
@@ -125,102 +124,17 @@ EOT;
         return $children;
     }
 
-
-    // FIXME when's this called?
-    public function getChild($name) {
-        list($name) = explode('.',$name);
-
-        // This version of getChild strips out any extensions
-        foreach($this->getChildren() as $child) {
-
-            $childName = $child->getName();
-            list($childName) = explode('.',$childName);
-            if ($childName==$name) return $child;
-
-        }
-        throw new Sabre_DAV_FileNotFoundException('File not found: ' . $name);
-
-    }
+    // FIXME implement
+    //public function getChild($name);
 
 }
 
-/**
- * Provides access to a single file in the directory
- *
- * FIXME needs to handle file creation denials
- * FIXME still contains stuff from the txt access example
- */
-class DokuWiki_DAV_File extends Sabre_DAV_File {
-
-    private $path;
-
-    public function __construct($path) {
-
-        $this->path = $path;
-
-    }
-
-    public function getName() {
-
-        $parts = explode(':',$this->path);
-        return $parts[count($parts)-1] . '.txt';
-
-    }
-
-    public function get() {
-
-        if(auth_quickaclcheck($this->path) < AUTH_READ){
-            throw new Sabre_DAV_PermissionDeniedException('You are not allowed to view this page');
-        }
-        return rawWiki($this->path,'');
-
-    }
-
-    public function put($text) {
-
-        global $TEXT;
-        global $lang;
-
-        $id    = cleanID($this->path);
-        $TEXT  = trim($text);
-        $sum   = '';
-        $minor = '';
-
-        if(auth_quickaclcheck($id) < AUTH_EDIT)
-            throw new Sabre_DAV_PermissionDeniedException('You are not allowed to edit this page');
-
-        // Check, if page is locked
-        if(checklock($id))
-            return new Sabre_DAV_PermissionDeniedException('The page is currently locked');
-
-        // SPAM check
-        if(checkwordblock())
-            return new Sabre_DAV_PermissionDeniedException('Positive wordblock check');
-
-        // autoset summary on new pages
-        if(!page_exists($id) && empty($sum)) {
-            $sum = $lang['created'];
-        }
-
-        // autoset summary on deleted pages
-        if(page_exists($id) && empty($TEXT) && empty($sum)) {
-            $sum = $lang['deleted'];
-        }
-
-        lock($id);
-        saveWikiText($id,$TEXT,$sum,$minor);
-        unlock($id);
-
-    }
-
-}
 
 // main
 $objectTree = new Sabre_DAV_ObjectTree(new DokuWiki_DAV_Directory(''));
 $server = new Sabre_DAV_Server($objectTree);
 $server->setBaseUri(DOKU_REL.'lib/plugins/webdav/dav.php');
 $server->exec();
-
 
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

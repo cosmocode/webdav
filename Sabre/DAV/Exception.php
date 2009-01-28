@@ -22,6 +22,13 @@
 class Sabre_DAV_Exception extends Exception { 
 
     /**
+     * For DokuWiki debugging. Log every exception with backtrace.
+     */
+    public function __construct(){
+        dbglog("EXCEPTION\n".dbg_backtrace());
+    }
+
+    /**
      * getHTTPCode
      *
      * @return int

@@ -37,7 +37,6 @@ class media_DAV_Directory extends Sabre_DAV_Directory {  #FIXME inherit from Dok
     public function getChildren() {
         global $conf;
         $children = array();
-
         $data = array();
         search($data,$conf['mediadir'],array($this,'search_callback'),array(),$this->path);
         foreach($data as $file){
@@ -51,23 +50,14 @@ class media_DAV_Directory extends Sabre_DAV_Directory {  #FIXME inherit from Dok
         return $children;
     }
 
-
-    // FIXME when's this called?
-/*
-    public function getChild($name) {
-        list($name) = explode('.',$name);
-
-        // This version of getChild strips out any extensions
-        foreach($this->getChildren() as $child) {
-
-            $childName = $child->getName();
-            list($childName) = explode('.',$childName);
-            if ($childName==$name) return $child;
-
-        }
-        throw new Sabre_DAV_FileNotFoundException('File not found: ' . $name);
+    public function createFile($path, $data = null){
+        $media = new media_DAV_File($path);
+        $media->put($data);
     }
-*/
+
+    // FIXME implement
+    // public function getChild($name) {
+
 
     /**
      * Callback for search(), lists all files and directories in media folder
@@ -129,7 +119,51 @@ class media_DAV_File extends Sabre_DAV_File {
     }
 
     public function put($data) {
-        //FIXME
+        global $lang;
+        global $conf;
+
+        // check ACL permissions
+        if(@file_exists($this->path)){
+            $perm_needed = AUTH_DELETE;
+        }else{
+            $perm_needed = AUTH_UPLOAD;
+        }
+        if(auth_quickaclcheck(getNS($this->id).':*') < $perm_needed){
+            throw new Sabre_DAV_PermissionDeniedException('Insufficient Permissions');
+        }
+
+        // get and check mime type
+        list($ext,$mime,$dl) = mimetype($this->id);
+        $types = array_keys(getMimeTypes());
+        $types = array_map(create_function('$q','return preg_quote($q,"/");'),$types);
+        $regex = join('|',$types);
+        if(!preg_match('/\.('.$regex.')$/i',$this->id))
+            throw new Sabre_DAV_PermissionDeniedException($lang['uploadwrong'].' YAR');
+
+        // execute content check FIXME currently needs a file path!
+        /*
+        $ok = media_contentcheck($this->path,$mime);
+        if($ok == -1){
+            throw new Sabre_DAV_PermissionDeniedException(sprintf($lang['uploadbadcontent'],".$iext"));
+        }elseif($ok == -2){
+            throw new Sabre_DAV_PermissionDeniedException($lang['uploadspam']);
+        }elseif($ok == -3){
+            throw new Sabre_DAV_PermissionDeniedException($lang['uploadxss']);
+        }
+        */
+
+        //FIXME should MEDIA_UPLOAD_FINISH be triggered here?
+
+        // prepare directory (shouldn't be needed as it should already exist, but doesn't harm)
+        io_createNamespace($this->id, 'media');
+
+        // save the file
+        if(io_saveFile($this->path,$data)){
+            chmod($this->path, $conf['fmode']);
+//FIXME            media_notify($this->id,$this->path,$mime);
+        }else{
+            throw new Sabre_DAV_Exception($lang['uploadfail']);
+        }
     }
 
 }
