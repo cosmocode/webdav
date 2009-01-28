@@ -131,7 +131,9 @@ EOT;
 
 
 // main
+$lockManager = new Sabre_DAV_LockManager_FS($conf['cachedir']); //FIXME use oru own?
 $objectTree = new Sabre_DAV_ObjectTree(new DokuWiki_DAV_Directory(''));
+$objectTree->setLockManager($lockManager);
 $server = new Sabre_DAV_Server($objectTree);
 $server->setBaseUri(DOKU_REL.'lib/plugins/webdav/dav.php');
 $server->exec();
