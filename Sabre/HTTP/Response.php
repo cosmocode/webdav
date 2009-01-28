@@ -5,7 +5,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: Response.php 188 2009-01-14 06:06:01Z evertpot $
+ * @version $Id: Response.php 202 2009-01-19 19:38:55Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -66,6 +66,18 @@ class Sabre_HTTP_Response {
 
         $value = str_replace(array("\r","\n"),array('\r','\n'),$value);
         header($name . ': ' . $value);
+
+    }
+
+    /**
+     * Sends the entire response body 
+     * 
+     * @param string $body 
+     * @return void
+     */
+    public function sendBody($body) {
+
+        echo $body;
 
     }
 

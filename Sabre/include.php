@@ -15,6 +15,7 @@ if(!defined('SABRE_DAV')) define('SABRE_DAV',dirname(__FILE__));
 include SABRE_DAV.'/PHP/Exception.php';
 include SABRE_DAV.'/HTTP/Response.php';
 include SABRE_DAV.'/HTTP/BasicAuth.php';
+include SABRE_DAV.'/HTTP/Request.php';
 
 // Basics
 include SABRE_DAV.'/DAV/Lock.php';

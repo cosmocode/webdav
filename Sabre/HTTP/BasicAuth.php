@@ -7,7 +7,7 @@
  * 
  * @package Sabre
  * @subpackage HTTP 
- * @version $Id: BasicAuth.php 188 2009-01-14 06:06:01Z evertpot $
+ * @version $Id: BasicAuth.php 202 2009-01-19 19:38:55Z evertpot $
  * @copyright Copyright (C) 2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -30,16 +30,49 @@ class Sabre_HTTP_BasicAuth {
      */
     protected $httpResponse;
 
+
+    /**
+     * HTTP request helper 
+     * 
+     * @var Sabre_HTTP_Request 
+     */
+    protected $httpRequest;
+
     /**
      * __construct 
      * 
-     * @return void
      */
     public function __construct() {
 
         $this->httpResponse = new Sabre_HTTP_Response();
+        $this->httpRequest = new Sabre_HTTP_Request();
 
     }
+
+    /**
+     * Sets an alternative HTTP response object 
+     * 
+     * @param Sabre_HTTP_Response $response 
+     * @return void
+     */
+    public function setHTTPResponse(Sabre_HTTP_Response $response) {
+
+        $this->httpResponse = $response;
+
+    }
+
+    /**
+     * Sets an alternative HTTP request object 
+     * 
+     * @param Sabre_HTTP_Request $request 
+     * @return void
+     */
+    public function setHTTPRequest(Sabre_HTTP_Request $request) {
+
+        $this->httpRequest = $request;
+
+    }
+
 
     /**
      * Returns the supplied username and password.
@@ -55,19 +88,16 @@ class Sabre_HTTP_BasicAuth {
     public function getUserPass() {
 
         // Apache
-        if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+        if ($user = $this->httpRequest->getRawServerValue('PHP_AUTH_USER') && $pass = $this->httpRequest->getRawServerValue('PHP_AUTH_PW')) {
 
-            $username = $_SERVER['PHP_AUTH_USER'];
-            $password = $_SERVER['PHP_AUTH_PW'];
-
-            return array($username,$password);
+            return array($user,$pass);
 
         }
 
         // IIS
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        if ($auth = $this->httpRequest->getHeader('Authorization')) {
 
-            return explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
+            return explode(':', base64_decode(substr($auth, 6)));
 
         }
 
