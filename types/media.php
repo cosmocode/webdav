@@ -11,28 +11,7 @@
 /**
  * Represents one directory and provides methods to access its contents
  */
-class media_DAV_Directory extends Sabre_DAV_Directory {  #FIXME inherit from DokuWiki_* instead?
-    /**
-     * the namespace inside the media directory
-     */
-    private $path;
-
-    /**
-     * Constructor. Initializes the path components
-     */
-    public function __construct($path) {
-        $this->path = cleanID($path);
-    }
-
-    /**
-     * Returns the basename of the current directory
-     *
-     * This is what will be shown in the file browser's dir listing
-     */
-    public function getName() {
-        if(!$this->path) return 'media'; //FIXME a bit ugly. just fixes display name of the virtual dir
-        return noNS($this->path);
-    }
+class media_DAV_Directory extends BaseType_DAV_Directory {
 
     /**
      * Return a directory listing of the current media namespace
@@ -41,7 +20,7 @@ class media_DAV_Directory extends Sabre_DAV_Directory {  #FIXME inherit from Dok
         global $conf;
         $children = array();
         $data = array();
-        search($data,$conf['mediadir'],array($this,'search_callback'),array(),$this->path);
+        search($data,$conf['mediadir'],array($this,'search_callback'),array(),$this->ns);
         foreach($data as $file){
             if($file['isdir']){
                 $children[] = new media_DAV_Directory($file['id']);
@@ -53,10 +32,6 @@ class media_DAV_Directory extends Sabre_DAV_Directory {  #FIXME inherit from Dok
         return $children;
     }
 
-    public function createFile($path, $data = null){
-        $media = new media_DAV_File($path);
-        $media->put($data);
-    }
 
     // FIXME implement
     // public function getChild($name) {
@@ -90,27 +65,11 @@ class media_DAV_Directory extends Sabre_DAV_Directory {  #FIXME inherit from Dok
 /**
  * Provides access to a single file in the directory
  */
-class media_DAV_File extends Sabre_DAV_File {
-
-    private $id;
-    private $path;
+class media_DAV_File extends BaseType_DAV_File {
 
     public function __construct($id) {
         $this->id   = cleanID($id);
         $this->path = mediaFN($this->id);
-    }
-
-    public function getName() {
-        return noNS($this->id);
-    }
-
-    public function getSize() {
-        return filesize($this->path);
-    }
-
-    // FIXME seems not to work? all files have today's date
-    public function getLastModified() {
-        return filemtime($this->path);
     }
 
     public function get() {

@@ -31,6 +31,7 @@ session_write_close();
 
 define('WEBDAV_DIR',dirname(__FILE__).'/');
 require_once(WEBDAV_DIR.'/Sabre/include.php');
+require_once(WEBDAV_DIR.'/inc/BaseType_DAV.php');
 require_once(WEBDAV_DIR.'/inc/DokuWiki_DAV.php');
 
 // main
