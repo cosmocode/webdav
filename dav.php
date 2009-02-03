@@ -43,7 +43,9 @@ require_once(WEBDAV_DIR.'/inc/DokuWiki_DAV.php');
 $lockManager = new Sabre_DAV_LockManager_FS($conf['cachedir']); //FIXME use our own?
 $objectTree = new Sabre_DAV_ObjectTree(new DokuWiki_DAV_Directory(''));
 $objectTree->setLockManager($lockManager);
-$server = new Sabre_DAV_Server($objectTree);
+$filterTree = new Sabre_DAV_TemporaryFileFilter($objectTree);
+$filterTree->setDataDir($conf['tmpdir']);
+$server = new Sabre_DAV_Server($filterTree);
 $server->setBaseUri(DOKU_REL.'lib/plugins/webdav/dav.php');
 $server->exec();
 
