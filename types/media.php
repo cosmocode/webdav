@@ -60,6 +60,44 @@ class media_DAV_Directory extends BaseType_DAV_Directory {
         $data[] = $info;
         return false;
     }
+
+    public function createDirectory($dir){
+        global $conf;
+        if(auth_quickaclcheck($this->ns.':*') < AUTH_CREATE){
+            throw new Sabre_DAV_PermissionDeniedException('Insufficient Permissions');
+        }
+
+        // no dir hierarchies
+        $dir = strtr($dir, array(':'=>$conf['sepchar'],
+                                 '/'=>$conf['sepchar'],
+                                 ';'=>$conf['sepchar']));
+        $dir = cleanID($dir);
+
+        $dir = mediaFN($this->ns.':'.$dir);
+        if(@file_exists($dir)){
+            throw new Sabre_DAV_PermissionDeniedException('Directory exists');
+        }
+
+        if(!io_mkdir_p($dir)){
+            throw new Sabre_DAV_PermissionDeniedException('Directory creation failed, filepermissions?');
+        }
+    }
+
+    public function delete(){
+        $dir = mediaFN($this->ns);
+        if(@!file_exists($dir)){
+            throw new Sabre_DAV_FileNotFoundException('Directory does not exist');
+        }
+
+        $files = glob("$dir/*");
+        if(count($files)){
+            throw new Sabre_DAV_PermissionDeniedException('Directory not empty');
+        }
+
+        if(!rmdir($dir)){
+            throw new Sabre_DAV_PermissionDeniedException('failed to delete directory');
+        }
+    }
 }
 
 /**
