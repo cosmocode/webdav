@@ -55,10 +55,10 @@ abstract class BaseType_DAV_Directory extends Sabre_DAV_Directory {
      *
      * This default just pushes the work to $type_DAV_File->put
      */
-    public function createFile($id, $data = null){
+    public function createFile($id, $stream = null){
         $class = $this->type.'_DAV_File';
         $obj   = new $class($this->ns.':'.$id);
-        $obj->put($data);
+        $obj->put($stream);
     }
 }
 
@@ -104,6 +104,39 @@ abstract class BaseType_DAV_File extends Sabre_DAV_File {
      */
     public function getLastModified() {
         return @filemtime($this->path);
+    }
+
+    /**
+     * Reads from the given stream and writes to the given file
+     *
+     * The file will be created or truncated depending on existance.
+     * Works similar to io_saveFile() as it takes care of locking
+     * and directory creation
+     *
+     * @todo might be worth to be moved to core
+     *
+     * @return boolean  true when file was written successfully
+     */
+    protected function _streamWriter($stream,$file) {
+        global $conf;
+
+        $fileexists = @file_exists($file);
+        io_makeFileDir($file);
+        io_lock($file);
+        $fh = @fopen($file,'wb');
+        if(!$fh){
+            io_unlock($file);
+            return false;
+        }
+
+        while ( ($buf=fread( $stream, 8192 )) != '' ) {
+            fwrite($fh,$buf);
+        }
+
+        fclose($fh);
+        if(!$fileexists and !empty($conf['fperm'])) chmod($file, $conf['fperm']);
+        io_unlock($file);
+        return true;
     }
 }
 

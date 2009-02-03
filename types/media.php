@@ -128,7 +128,7 @@ class media_DAV_File extends BaseType_DAV_File {
         }
     }
 
-    public function put($data) {
+    public function put($stream) {
         global $lang;
         global $conf;
 
@@ -168,10 +168,7 @@ class media_DAV_File extends BaseType_DAV_File {
         io_createNamespace($this->id, 'media');
 
         // save the file
-        if(io_saveFile($this->path,$data)){
-            chmod($this->path, $conf['fmode']);
-//FIXME            media_notify($this->id,$this->path,$mime);
-        }else{
+        if(!$this->_streamWriter($stream,$this->path)){
             throw new Sabre_DAV_Exception($lang['uploadfail']);
         }
     }
