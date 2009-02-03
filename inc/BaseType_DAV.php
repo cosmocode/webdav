@@ -57,7 +57,7 @@ abstract class BaseType_DAV_Directory extends Sabre_DAV_Directory {
      */
     public function createFile($id, $data = null){
         $class = $this->type.'_DAV_File';
-        $obj   = new $class($id);
+        $obj   = new $class($this->ns.':'.$id);
         $obj->put($data);
     }
 }
