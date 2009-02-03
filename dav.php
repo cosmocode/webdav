@@ -14,13 +14,18 @@ require_once(DOKU_INC.'inc/events.php');
 require_once(DOKU_INC.'inc/parserutils.php');
 
 require_once(DOKU_INC.'inc/auth.php');
+dbglog('connect from '.clientIP());
+
 //FIXME putting this here disables anonymous browsing :-/
+//FIXME http://support.microsoft.com/kb/841215 Basic Auth disabled in Windows
 if ($conf['useacl'] && !isset($_SERVER['REMOTE_USER'])) {
    header('WWW-Authenticate: Basic realm="DokuWiki WebDAV"');
    header('HTTP/1.0 401 Unauthorized');
    echo 'Please log in.';
    exit;
 }
+
+
 dbglog('login: '.$_SERVER['REMOTE_USER']);
 
 require_once(DOKU_INC.'inc/pageutils.php');
