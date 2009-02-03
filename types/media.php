@@ -115,7 +115,11 @@ class media_DAV_File extends BaseType_DAV_File {
         if(auth_quickaclcheck(getNS($this->id).':*') < AUTH_READ){
             throw new Sabre_DAV_PermissionDeniedException('You are not allowed to access this file');
         }
-        return io_readFile($this->path,false); //FIXME inefficient for large data
+
+        $fh = fopen($this->path,'rb');
+        if(!$fh) throw new Sabre_DAV_PermissionDeniedException('Failed to open file for reading'.$this->path);
+
+        return $fh;
     }
 
     //FIXME is missing a few checks media_delete would do
