@@ -5,7 +5,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: Tree.php 180 2009-01-12 15:05:10Z evertpot $
+ * @version $Id: Tree.php 212 2009-01-30 05:26:11Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -48,8 +48,10 @@ abstract class Sabre_DAV_Tree {
     /**
      * Updates an existing file node 
      *
+     * data is a readable stream resource
+     *
      * @param string $path 
-     * @param string $data 
+     * @param resource $data 
      * @return bool
      */
     abstract function put($path, $data);
@@ -57,17 +59,21 @@ abstract class Sabre_DAV_Tree {
     /**
      * Creates a new filenode on the specified path
      *
+     * Data is a readable stream resource.
+     *
      * @param string $path 
-     * @param string $data 
+     * @param resource $data 
      * @return bool
      */
     abstract function createFile($path, $data);
 
     /**
      * Returns the contents of a node 
-     * 
+     *
+     * This method may either return a string, or a readable stream resource.
+     *
      * @param string $path 
-     * @return string 
+     * @return mixed
      */
     abstract function get($path);
 

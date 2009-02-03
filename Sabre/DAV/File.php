@@ -8,7 +8,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: File.php 182 2009-01-12 22:56:52Z evertpot $
+ * @version $Id: File.php 212 2009-01-30 05:26:11Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -16,9 +16,11 @@
 abstract class Sabre_DAV_File extends Sabre_DAV_Node implements Sabre_DAV_IFile {
 
     /**
-     * Updates the data 
+     * Updates the data
+     *
+     * data is a readable stream resource.
      * 
-     * @param string $data 
+     * @param resource $data 
      * @return void 
      */
     public function put($data) { 
@@ -29,8 +31,10 @@ abstract class Sabre_DAV_File extends Sabre_DAV_Node implements Sabre_DAV_IFile 
 
     /**
      * Returns the data 
-     * 
-     * @return string 
+     *
+     * This method may either return a string or a readable stream resource
+     *
+     * @return mixed 
      */
     public function get() { 
 

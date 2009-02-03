@@ -5,7 +5,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: Response.php 202 2009-01-19 19:38:55Z evertpot $
+ * @version $Id: Response.php 211 2009-01-30 05:03:04Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -70,14 +70,27 @@ class Sabre_HTTP_Response {
     }
 
     /**
-     * Sends the entire response body 
+     * Sends the entire response body
+     *
+     * This method can accept either an open filestream, or a string.
+     * Note that this method will first rewind the stream before output.
      * 
-     * @param string $body 
+     * @param mixed $body 
      * @return void
      */
     public function sendBody($body) {
 
-        echo $body;
+        if (is_resource($body)) {
+        
+            rewind($body);
+            fpassthru($body);
+
+        } else {
+
+            // We assume a string
+            echo $body;
+
+        }
 
     }
 

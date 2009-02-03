@@ -7,7 +7,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: IDirectory.php 182 2009-01-12 22:56:52Z evertpot $
+ * @version $Id: IDirectory.php 214 2009-01-30 05:30:43Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -17,8 +17,10 @@ interface Sabre_DAV_IDirectory extends Sabre_DAV_INode {
     /**
      * Creates a new file in the directory 
      * 
+     * data is a readable stream resource
+     *
      * @param string $name Name of the file 
-     * @param string $data Initial payload 
+     * @param resource $data Initial payload 
      * @return void
      */
     function createFile($name, $data = null);

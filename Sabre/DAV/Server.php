@@ -5,7 +5,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: Server.php 206 2009-01-20 02:13:23Z evertpot $
+ * @version $Id: Server.php 213 2009-01-30 05:30:34Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -226,7 +226,7 @@ class Sabre_DAV_Server {
     protected function httpPropfind() {
 
         // $xml = new Sabre_DAV_XMLReader(file_get_contents('php://input'));
-        $properties = $this->parsePropfindRequest($this->httpRequest->getBody());
+        $properties = $this->parsePropfindRequest($this->httpRequest->getBody(true));
 
 
         $depth = $this->getHTTPDepth(1);
@@ -257,7 +257,7 @@ class Sabre_DAV_Server {
         $this->httpResponse->sendStatus(207);
         $this->httpResponse->setHeader('Content-Type','text/xml; charset="utf-8"');
         $data = $this->generatePropfindResponse($fileList,$properties);
-        echo $data;
+        $this->httpResponse->sendBody($data);
 
     }
 
@@ -275,7 +275,7 @@ class Sabre_DAV_Server {
         // Checking possible locks
         if (!$this->validateLock()) throw new Sabre_DAV_LockedException('The resource you tried to edit is locked');
        
-        $mutations = $this->parsePropPatchRequest($this->httpRequest->getBody());
+        $mutations = $this->parsePropPatchRequest($this->httpRequest->getBody(true));
 
         $result = $this->tree->updateProperties($this->getRequestUri(),$mutations);
 
@@ -353,7 +353,7 @@ class Sabre_DAV_Server {
 
         foreach($_FILES as $file) {
 
-            $this->tree->put($this->getRequestUri().file_get_contents($file['tmp_name']));
+            $this->tree->put($this->getRequestUri().'/' . basename($file['name']),fopen($file['tmp_name'],'r'));
             break;
 
         }
@@ -378,7 +378,7 @@ class Sabre_DAV_Server {
         $requestUri = $this->getRequestUri();
 
         // If there's a body, we're supposed to send an HTTP 415 Unsupported Media Type exception
-        $requestBody = $this->httpRequest->getBody();
+        $requestBody = $this->httpRequest->getBody(true);
         if ($requestBody) throw new Sabre_DAV_UnsupportedMediaTypeException();
 
         // We'll check if the parent exists, and if it's a collection. If this is not the case, we need to throw a conflict exception
@@ -480,7 +480,7 @@ class Sabre_DAV_Server {
 
         }
 
-        if ($body = $this->httpRequest->getBody()) {
+        if ($body = $this->httpRequest->getBody(true)) {
             // There as a new lock request
             $lockInfo = Sabre_DAV_Lock::parseLockRequest($body);
             $lockInfo->depth = $this->getHTTPDepth(0); 
@@ -507,7 +507,7 @@ class Sabre_DAV_Server {
         } catch (Sabre_DAV_FileNotFoundException $e) {
             
             // It didn't, lets create it 
-            $this->tree->createFile($uri,'');
+            $this->tree->createFile($uri,fopen('data://text/plain,'));
             
             // We also need to return a 201 in this case
             $this->httpResponse->sendStatus(201);
@@ -623,6 +623,8 @@ class Sabre_DAV_Server {
             $uri = parse_url($uri,PHP_URL_PATH);
 
         }
+
+        $uri = str_replace('//','/',$uri);
 
         if (strpos($uri,$this->baseUri)===0) {
 
