@@ -138,6 +138,17 @@ abstract class BaseType_DAV_File extends Sabre_DAV_File {
         io_unlock($file);
         return true;
     }
+
+    /**
+     * Reads a given stream into a string and returnes it
+     */
+    protected function _streamReader($stream) {
+        $data = '';
+        while ( ($buf=fread( $stream, 8192 )) != '' ) {
+            $data .= $buf;
+        }
+        return $data;
+    }
 }
 
 

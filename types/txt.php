@@ -11,7 +11,7 @@
 class txt_DAV_Directory extends BaseType_DAV_Directory {
 
     /**
-     * Return a directory listing of the current media namespace
+     * Return a directory listing of the current page namespace
      */
     public function getChildren() {
         global $conf;
@@ -20,10 +20,11 @@ class txt_DAV_Directory extends BaseType_DAV_Directory {
         search($data,$conf['datadir'],array($this,'search_callback'),array(),$this->ns);
         foreach($data as $file){
             if($file['isdir']){
-                $children[] = new txt_DAV_Directory($file['id']);
+                $class = $this->type.'_DAV_Directory';
             }else{
-                $children[] = new txt_DAV_File($file['id']);
+                $class = $this->type.'_DAV_File';
             }
+            $children[] = new $class($file['id']);
         }
 
         return $children;
@@ -120,10 +121,14 @@ class txt_DAV_File extends BaseType_DAV_File {
     }
 
     public function delete() {
-        $this->put(null); // it's just a save with empty content
+        $this->_saveContent(''); // it's just a save with empty content
     }
 
     public function put($stream) {
+        $this->_saveContent($this->_streamReader($stream));
+    }
+
+    protected function _saveContent(&$text) {
         global $lang;
         global $conf;
 
@@ -132,16 +137,9 @@ class txt_DAV_File extends BaseType_DAV_File {
             throw new Sabre_DAV_PermissionDeniedException('Insufficient Permissions');
         }
 
-        // read the whole page to memory
-        $text = '';
-        if(!is_null($stream)){
-            while ( ($buf=fread( $stream, 8192 )) != '' ) {
-                $text .= $buf;
-            }
-        }
 
         if(!utf8_check($text)){
-            throw new Sabre_DAV_PermissionDeniedException('Seems not to be valid UTF-8 text');
+            throw new Sabre_DAV_UnsupportedMediaTypeException('Seems not to be valid UTF-8 text');
         }
 
         $summary = 'changed via webdav'; #FIXME
