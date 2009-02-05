@@ -7,7 +7,7 @@
  * 
  * @package Sabre
  * @subpackage DAV
- * @version $Id: ObjectTree.php 212 2009-01-30 05:26:11Z evertpot $
+ * @version $Id: ObjectTree.php 219 2009-02-05 01:15:49Z evertpot $
  * @copyright Copyright (C) 2007-2009 Rooftop Solutions. All rights reserved.
  * @author Evert Pot (http://www.rooftopsolutions.nl/) 
  * @license http://code.google.com/p/sabredav/wiki/License Modified BSD License
@@ -155,25 +155,22 @@ class Sabre_DAV_ObjectTree extends Sabre_DAV_Tree {
 
         $fileList = array();
 
-        if ($depth==0 || $depth == Sabre_DAV_Server::DEPTH_INFINITY) {
-            $props = array(
-                'name'         => '',
-                'type'         => $fileObject instanceof Sabre_DAV_IDirectory?Sabre_DAV_Server::NODE_DIRECTORY:Sabre_DAV_Server::NODE_FILE,
-                'lastmodified' => $fileObject->getLastModified(),
-                'size'         => $fileObject->getSize(),
-            );
+        $props = array(
+            'name'         => '',
+            'type'         => $fileObject instanceof Sabre_DAV_IDirectory?Sabre_DAV_Server::NODE_DIRECTORY:Sabre_DAV_Server::NODE_FILE,
+            'lastmodified' => $fileObject->getLastModified(),
+            'size'         => $fileObject->getSize(),
+        );
 
-            if ($fileObject instanceof Sabre_DAV_IQuota) {
+        if ($fileObject instanceof Sabre_DAV_IQuota) {
 
-                $quotaInfo = $fileObject->getQuotaInfo();
-                $props['quota-used'] = $quotaInfo[0];
-                $props['quota-available'] = $quotaInfo[1];
-
-            }
-
-            $fileList[] = $props;
+            $quotaInfo = $fileObject->getQuotaInfo();
+            $props['quota-used'] = $quotaInfo[0];
+            $props['quota-available'] = $quotaInfo[1];
 
         }
+
+        $fileList[] = $props;
 
         // If the depth was 1, we'll also want the files in the directory
         if (($depth==1 || $depth==Sabre_DAV_Server::DEPTH_INFINITY) && $fileObject instanceof Sabre_DAV_IDirectory) {
